@@ -1,11 +1,14 @@
-Packet Sniffer
-Overview
+# Packet Sniffer
+
+## Overview
+
 The Packet Sniffer is a program designed to capture and analyze network packets on a specified network interface. It provides detailed information about each captured packet, including source and destination IP addresses, ports, protocol, packet size, and a timestamp.
 
-Usage
-Compile the Program:
-bash
-Copy code
+## Usage
+
+### Compile the Program:
+
+```bash
 gcc -o packet_sniffer packet_sniffer.c main.c -lpcap
 Run the Packet Sniffer:
 bash
