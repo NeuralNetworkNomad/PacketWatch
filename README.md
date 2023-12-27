@@ -24,3 +24,15 @@ sudo ./packet_sniffer eth0 output.txt 100 ""
 # Dependencies:
 sudo apt-get update
 sudo apt-get install libpcap-dev
+
+# What it looks like
+
+[Wed Dec 27 02:32:22 2023]
+Packet captured, size: 166 bytes
+    Source IP: 45.90.12.156
+    Destination IP: 45.90.12.26
+    Source Port: 39396
+    Destination Port: 22
+    Protocol: Unknown (since its a empty string)
+
+    Condensed information: Packets from 45.90.12.156: 8
