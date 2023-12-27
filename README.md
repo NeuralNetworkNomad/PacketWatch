@@ -20,3 +20,7 @@ sudo ./packet_sniffer <interface> <output_file> <packet_count> <filter_expressio
 
 # Example:
 sudo ./packet_sniffer eth0 output.txt 100 ""
+
+# Dependencies:
+sudo apt-get update
+sudo apt-get install libpcap-dev
