@@ -1,8 +1,8 @@
-# Packet Sniffer
+# Packet Watch
 
 ## Overview
 
-The Packet Sniffer is a program designed to capture and analyze network packets on a specified network interface. It provides detailed information about each captured packet, including source and destination IP addresses, ports, protocol, packet size, and a timestamp.
+Packet Watch is a program designed to capture and analyze network packets on a specified network interface. It provides detailed information about each captured packet, including source and destination IP addresses, ports, protocol, packet size, and a timestamp.
 
 ## Usage
 
