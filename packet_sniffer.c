@@ -52,6 +52,9 @@ void packet_handler(unsigned char *user_data, const struct pcap_pkthdr *pkthdr, 
 
     current->count++;
 
+    printf("\rPackets from %s: %u    ", source_ip, current->count);
+    fflush(stdout);
+
     time_t timestamp = pkthdr->ts.tv_sec;
     fprintf(output_file, "[%s] Packet captured, size: %d bytes\n", ctime(&timestamp), pkthdr->len);
     fprintf(output_file, "    Source IP: %s\n", source_ip);
@@ -62,9 +65,13 @@ void packet_handler(unsigned char *user_data, const struct pcap_pkthdr *pkthdr, 
     fprintf(output_file, "\n");
     fprintf(output_file, "    Condensed information: Packets from %s: %u\n\n", source_ip, current->count);
 
-    printf("\r[%s] Packets from %s: %u    ", ctime(&timestamp), source_ip, current->count);
-    fflush(stdout);
+    if (packet_counts != NULL) {
+        struct PacketCount *temp = packet_counts;
+        packet_counts = packet_counts->next;
+        free(temp);
+    }
 }
+
 
 
 void start_packet_capture(const char *interface, const char *output_file_name, int packet_count, const char *filter_expression) {
