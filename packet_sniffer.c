@@ -61,7 +61,11 @@ void packet_handler(unsigned char *user_data, const struct pcap_pkthdr *pkthdr, 
     fprintf(output_file, "    Protocol: %s\n", (protocol == 6) ? "TCP" : ((protocol == 17) ? "UDP" : "Unknown"));
     fprintf(output_file, "\n");
     fprintf(output_file, "    Condensed information: Packets from %s: %u\n\n", source_ip, current->count);
+
+    printf("\r[%s] Packets from %s: %u    ", ctime(&timestamp), source_ip, current->count);
+    fflush(stdout);
 }
+
 
 void start_packet_capture(const char *interface, const char *output_file_name, int packet_count, const char *filter_expression) {
     char errbuf[PCAP_ERRBUF_SIZE];
