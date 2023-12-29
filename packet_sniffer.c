@@ -19,7 +19,7 @@ FILE *output_file;
 struct PacketCount *packet_counts = NULL;
 
 void packet_handler(unsigned char *user_data, const struct pcap_pkthdr *pkthdr, const unsigned char *packet) {
-    struct iphdr *ip_header = (struct iphdr *)(packet + 14); // Assuming Ethernet header
+    struct iphdr *ip_header = (struct iphdr *)(packet + 14);
 
     char source_ip[INET_ADDRSTRLEN], dest_ip[INET_ADDRSTRLEN];
     inet_ntop(AF_INET, &(ip_header->saddr), source_ip, INET_ADDRSTRLEN);
@@ -66,7 +66,6 @@ void packet_handler(unsigned char *user_data, const struct pcap_pkthdr *pkthdr, 
 void start_packet_capture(const char *interface, const char *output_file_name, int packet_count, const char *filter_expression) {
     char errbuf[PCAP_ERRBUF_SIZE];
 
-    // Open a network device for packet capture
     handle = pcap_open_live(interface, BUFSIZ, 1, 1000, errbuf);
 
     if (handle == NULL) {
@@ -74,7 +73,6 @@ void start_packet_capture(const char *interface, const char *output_file_name, i
         return;
     }
 
-    // Compile and apply packet filter
     struct bpf_program fp;
     if (pcap_compile(handle, &fp, filter_expression, 0, PCAP_NETMASK_UNKNOWN) == -1) {
         fprintf(stderr, "Could not parse filter %s: %s\n", filter_expression, pcap_geterr(handle));
@@ -85,7 +83,6 @@ void start_packet_capture(const char *interface, const char *output_file_name, i
         return;
     }
 
-    // Open the output file for writing
     output_file = fopen(output_file_name, "w");
     if (output_file == NULL) {
         fprintf(stderr, "Could not open output file for writing\n");
