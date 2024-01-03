@@ -7,6 +7,7 @@
 #include <stdlib.h>
 #include <pcap.h>
 #include <unistd.h>
+#include <string.h>
 
 struct PacketCount {
     char source_ip[INET_ADDRSTRLEN];
