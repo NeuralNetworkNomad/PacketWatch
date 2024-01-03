@@ -19,6 +19,8 @@ FILE *output_file;
 struct PacketCount *packet_counts = NULL;
 
 void packet_handler(unsigned char *user_data, const struct pcap_pkthdr *pkthdr, const unsigned char *packet) {
+    time_t timestamp = pkthdr->ts.tv_sec;
+
     struct iphdr *ip_header = (struct iphdr *)(packet + 14);
 
     char source_ip[INET_ADDRSTRLEN], dest_ip[INET_ADDRSTRLEN];
@@ -53,9 +55,8 @@ void packet_handler(unsigned char *user_data, const struct pcap_pkthdr *pkthdr, 
     current->count++;
 
     printf("\rPackets captured: %u", current->count);
-    fflush(stdout)
+    fflush(stdout);
 
-    time_t timestamp = pkthdr->ts.tv_sec;
     fprintf(output_file, "[%s] Packet captured, size: %d bytes\n", ctime(&timestamp), pkthdr->len);
     fprintf(output_file, "    Source IP: %s\n", source_ip);
     fprintf(output_file, "    Destination IP: %s\n", dest_ip);
@@ -71,6 +72,7 @@ void packet_handler(unsigned char *user_data, const struct pcap_pkthdr *pkthdr, 
         free(temp);
     }
 }
+
 
 
 

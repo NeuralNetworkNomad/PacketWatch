@@ -1,6 +1,7 @@
 // main.c
 
 #include "packet_sniffer.h"
+#include <stdlib.h>  // Include this line
 
 int main(int argc, char *argv[]) {
     if (argc != 5) {
