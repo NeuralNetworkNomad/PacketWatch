@@ -2,35 +2,28 @@
 
 #include "packet_sniffer.h"
 #include <stdio.h>
-#include <time.h>
 #include <arpa/inet.h>
 #include <netinet/ip.h>
-#include <string.h>
 #include <stdlib.h>
+#include <pcap.h>
+#include <unistd.h>
 
 struct PacketCount {
     char source_ip[INET_ADDRSTRLEN];
-    unsigned int count;
+    unsigned int incoming_count;
+    unsigned int outgoing_count;
     struct PacketCount *next;
 };
 
 pcap_t *handle;
-FILE *output_file;
 struct PacketCount *packet_counts = NULL;
 
 void packet_handler(unsigned char *user_data, const struct pcap_pkthdr *pkthdr, const unsigned char *packet) {
-    time_t timestamp = pkthdr->ts.tv_sec;
-
     struct iphdr *ip_header = (struct iphdr *)(packet + 14);
 
     char source_ip[INET_ADDRSTRLEN], dest_ip[INET_ADDRSTRLEN];
     inet_ntop(AF_INET, &(ip_header->saddr), source_ip, INET_ADDRSTRLEN);
     inet_ntop(AF_INET, &(ip_header->daddr), dest_ip, INET_ADDRSTRLEN);
-
-    unsigned short *source_port = (unsigned short *)(packet + 14 + (ip_header->ihl << 2));
-    unsigned short *dest_port = (unsigned short *)(packet + 14 + (ip_header->ihl << 2) + 2);
-
-    unsigned char protocol = *(packet + 14 + (ip_header->ihl << 2) + 9);
 
     struct PacketCount *current = packet_counts;
     struct PacketCount *previous = NULL;
@@ -42,7 +35,8 @@ void packet_handler(unsigned char *user_data, const struct pcap_pkthdr *pkthdr, 
     if (current == NULL) {
         current = (struct PacketCount *)malloc(sizeof(struct PacketCount));
         strncpy(current->source_ip, source_ip, INET_ADDRSTRLEN);
-        current->count = 0;
+        current->incoming_count = 0;
+        current->outgoing_count = 0;
         current->next = NULL;
 
         if (previous == NULL) {
@@ -52,31 +46,19 @@ void packet_handler(unsigned char *user_data, const struct pcap_pkthdr *pkthdr, 
         }
     }
 
-    current->count++;
-
-    printf("\rPackets captured: %u", current->count);
-    fflush(stdout);
-
-    fprintf(output_file, "[%s] Packet captured, size: %d bytes\n", ctime(&timestamp), pkthdr->len);
-    fprintf(output_file, "    Source IP: %s\n", source_ip);
-    fprintf(output_file, "    Destination IP: %s\n", dest_ip);
-    fprintf(output_file, "    Source Port: %d\n", ntohs(*source_port));
-    fprintf(output_file, "    Destination Port: %d\n", ntohs(*dest_port));
-    fprintf(output_file, "    Protocol: %s\n", (protocol == 6) ? "TCP" : ((protocol == 17) ? "UDP" : "Unknown"));
-    fprintf(output_file, "\n");
-    fprintf(output_file, "    Condensed information: Packets from %s: %u\n\n", source_ip, current->count);
-
-    if (packet_counts != NULL) {
-        struct PacketCount *temp = packet_counts;
-        packet_counts = packet_counts->next;
-        free(temp);
+    if (ip_header->saddr == ip_header->daddr) {
+        // Incoming packet
+        current->incoming_count++;
+    } else {
+        // Outgoing packet
+        current->outgoing_count++;
     }
+
+    printf("\rPackets captured (Incoming: %u, Outgoing: %u)", current->incoming_count, current->outgoing_count);
+    fflush(stdout);
 }
 
-
-
-
-void start_packet_capture(const char *interface, const char *output_file_name, int packet_count, const char *filter_expression) {
+void start_packet_capture(const char *interface) {
     char errbuf[PCAP_ERRBUF_SIZE];
 
     handle = pcap_open_live(interface, BUFSIZ, 1, 1000, errbuf);
@@ -86,26 +68,10 @@ void start_packet_capture(const char *interface, const char *output_file_name, i
         return;
     }
 
-    struct bpf_program fp;
-    if (pcap_compile(handle, &fp, filter_expression, 0, PCAP_NETMASK_UNKNOWN) == -1) {
-        fprintf(stderr, "Could not parse filter %s: %s\n", filter_expression, pcap_geterr(handle));
-        return;
+    while (1) {
+        pcap_dispatch(handle, 0, packet_handler, NULL);
+        sleep(1);  // Sleep for 1 second
     }
-    if (pcap_setfilter(handle, &fp) == -1) {
-        fprintf(stderr, "Could not install filter %s: %s\n", filter_expression, pcap_geterr(handle));
-        return;
-    }
-
-    output_file = fopen(output_file_name, "w");
-    if (output_file == NULL) {
-        fprintf(stderr, "Could not open output file for writing\n");
-        return;
-    }
-
-    pcap_loop(handle, packet_count, packet_handler, NULL);
-
-    pcap_close(handle);
-    fclose(output_file);
 }
 
 void stop_packet_capture() {
@@ -118,5 +84,4 @@ void stop_packet_capture() {
     }
 
     pcap_close(handle);
-    fclose(output_file);
 }
