@@ -8,6 +8,7 @@
 #include <pcap.h>
 #include <unistd.h>
 #include <string.h>
+#include <netinet/in.h>  // Include this header for ntohs function
 
 struct PacketCount {
     char source_ip[INET_ADDRSTRLEN];
@@ -47,7 +48,11 @@ void packet_handler(unsigned char *user_data, const struct pcap_pkthdr *pkthdr, 
         }
     }
 
-    if (ip_header->saddr == ip_header->daddr) {
+    // Convert source and destination addresses to host byte order for proper comparison
+    in_addr_t src_addr = ntohl(ip_header->saddr);
+    in_addr_t dest_addr = ntohl(ip_header->daddr);
+
+    if (src_addr == dest_addr) {
         // Incoming packet
         current->incoming_count++;
     } else {
