@@ -52,11 +52,9 @@ void packet_handler(unsigned char *user_data, const struct pcap_pkthdr *pkthdr, 
 
     current->count++;
 
-    // Print console output without timestamps and additional information
     printf("\rPackets captured: %u", current->count);
-    fflush(stdout);  // Flush the console output to ensure it's updated immediately
+    fflush(stdout)
 
-    // Update output file with previous information
     time_t timestamp = pkthdr->ts.tv_sec;
     fprintf(output_file, "[%s] Packet captured, size: %d bytes\n", ctime(&timestamp), pkthdr->len);
     fprintf(output_file, "    Source IP: %s\n", source_ip);
@@ -67,7 +65,6 @@ void packet_handler(unsigned char *user_data, const struct pcap_pkthdr *pkthdr, 
     fprintf(output_file, "\n");
     fprintf(output_file, "    Condensed information: Packets from %s: %u\n\n", source_ip, current->count);
 
-    // Avoid "double free" issue
     if (packet_counts != NULL) {
         struct PacketCount *temp = packet_counts;
         packet_counts = packet_counts->next;
